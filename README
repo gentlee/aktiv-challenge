@@ -1,0 +1,12 @@
+### How to launch?
+
+- Setup env https://reactnative.dev/docs/environment-setup
+- Run `npm run ios-hard`
+
+### Some details & simplifications
+
+1. React native navigation was chosen just to try it.
+2. Image list state is global for the whole app. It doesn't support to be mounted multiple times.
+3. Image viewer is very simple - just enough for not paid challenge app.
+4. Objects passed between screens, not ids, and no normalization. It is not needed in the current case.
+5. Outdated requests are not canceled after sending, but responses ignored.
