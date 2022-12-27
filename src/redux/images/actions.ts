@@ -62,7 +62,7 @@ export const loadNextImagePage = async (userInput?: string) => {
   let response: PixabayGetImagesResponse | undefined;
   let error: Error | undefined;
   try {
-    response = await getImages(query!, nextPage);
+    response = await getImages(query, nextPage);
   } catch (e) {
     error = e as Error;
   }
@@ -74,11 +74,10 @@ export const loadNextImagePage = async (userInput?: string) => {
     !currentState.loading
   ) {
     console.log('cancel response', {
-      query,
+      actionParams,
+      currentState,
       error,
       response,
-      page: nextPage,
-      currentState,
     });
     return;
   }
