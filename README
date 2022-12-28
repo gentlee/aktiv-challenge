@@ -1,7 +1,8 @@
 ### How to launch?
 
 - Setup env https://reactnative.dev/docs/environment-setup
-- Run `npm run ios-hard`
+- To run ios for the first time: `npm run ios-hard`
+- To run android for the first time: `npm run android-hard`
 
 ### Some details & simplifications
 
