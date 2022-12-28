@@ -35,6 +35,7 @@ export const ImageViewer: NavigationFunctionComponent<Props> = ({image}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'white',
   },
   innerContainer: {
     padding: 16,
