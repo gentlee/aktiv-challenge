@@ -1,6 +1,7 @@
 import actionCreatorFactory from 'typescript-fsa';
 import {getImages} from '../../api/pixabay/endpoints';
 import {PixabayGetImagesResponse} from '../../api/pixabay/types';
+import {getQuery} from '../../utils/images';
 import {getState, dispatch} from '../store';
 
 const actionCreator = actionCreatorFactory('IMAGES');
@@ -8,7 +9,6 @@ const actionCreator = actionCreatorFactory('IMAGES');
 export const loadImages = actionCreator.async<
   {
     userInput: string;
-    query: string;
     page: number;
   },
   PixabayGetImagesResponse,
@@ -18,64 +18,64 @@ export const loadImages = actionCreator.async<
 export const loadNextImagePage = async (userInput?: string) => {
   const {
     userInput: currentUserInput,
-    query: currentQuery,
     error: currentError,
     currentPage,
     loading,
     endReached,
   } = getState();
 
-  const query =
-    userInput === undefined
-      ? currentQuery
-      : userInput.trim().replace(/\s+/g, '+');
+  const currentQuery = getQuery(currentUserInput);
 
-  if (userInput !== undefined) {
-    if (query === getState().query) {
+  let query: string;
+  if (userInput === undefined) {
+    userInput = currentUserInput;
+    query = currentQuery;
+  } else {
+    query = getQuery(userInput);
+
+    if (query === currentQuery) {
       console.log('cancel request for similar query', {
         userInput,
+        currentUserInput,
         query,
         currentQuery,
       });
       return;
     }
-  } else {
-    userInput = currentUserInput;
   }
 
-  const nextPage =
+  const page =
     currentQuery !== query ? 1 : currentError ? currentPage : currentPage + 1;
 
-  if (nextPage !== 1 && (loading || endReached)) {
+  if (page !== 1 && (loading || endReached)) {
     console.log('cancel request, already loading or end reached', {
       query,
-      nextPage,
-      state: getState(),
+      page,
     });
     return;
   }
 
-  const actionParams = {userInput, query, page: nextPage};
+  const actionParams = {userInput, page};
 
   dispatch(loadImages.started(actionParams));
 
   let response: PixabayGetImagesResponse | undefined;
   let error: Error | undefined;
   try {
-    response = await getImages(query, nextPage);
+    response = await getImages(query, page);
   } catch (e) {
     error = e as Error;
   }
 
   const currentState = getState();
   if (
-    currentState.query !== actionParams.query ||
-    currentState.currentPage !== actionParams.page ||
+    getQuery(currentState.userInput) !== query ||
+    currentState.currentPage !== page ||
     !currentState.loading
   ) {
     console.log('cancel response', {
-      actionParams,
-      currentState,
+      query,
+      page,
       error,
       response,
     });

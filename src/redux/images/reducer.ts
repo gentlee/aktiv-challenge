@@ -2,45 +2,39 @@ import {reducerWithInitialState} from 'typescript-fsa-reducers';
 import {PixabayImage} from '../../api/pixabay/types';
 import {loadImages} from './actions';
 
-const emptyIds = new Set<number>();
-const emptyData: PixabayImage[] = [];
-
 type ImagesState = {
+  _ids: Set<number>; // mutable
   userInput: string;
-  query: string;
   currentPage: number;
   loading: boolean;
   endReached: boolean;
   data: PixabayImage[];
-  ids: Set<number>;
   total?: number;
   error?: Error;
 };
 
 const initialState: ImagesState = {
+  _ids: new Set(),
   userInput: '',
-  query: '',
   currentPage: 0,
   loading: false,
   endReached: false,
-  data: emptyData,
-  ids: emptyIds,
+  data: [],
   total: undefined,
   error: undefined,
 };
 
 export const imagesReducer = reducerWithInitialState(initialState)
-  .case(loadImages.started, (state, {userInput, query, page}) => {
+  .case(loadImages.started, (state, {userInput, page}) => {
     const newState = {
       ...state,
       userInput,
-      query,
       currentPage: page,
       loading: true,
     };
     if (page === 1) {
-      newState.data = emptyData;
-      newState.ids = emptyIds;
+      newState._ids.clear();
+      newState.data = [];
       newState.error = undefined;
       newState.endReached = false;
       newState.total = undefined;
@@ -63,10 +57,10 @@ export const imagesReducer = reducerWithInitialState(initialState)
     };
 
     // remove duplicates, which are possible with offset-based pagination
-    const hasNewData = result.hits.some(x => !state.ids.has(x.id));
+    const ids = state._ids;
+    const hasNewData = result.hits.some(x => !ids.has(x.id));
     if (hasNewData) {
       const data = [...state.data];
-      const ids = new Set(state.ids);
       for (let hit of result.hits) {
         if (!ids.has(hit.id)) {
           ids.add(hit.id);
@@ -76,7 +70,6 @@ export const imagesReducer = reducerWithInitialState(initialState)
         }
       }
       newState.data = data;
-      newState.ids = ids;
     } else if (result.hits.length) {
       console.warn('duplicated page ignored', result);
     }

@@ -1,8 +1,12 @@
 import {decode} from '../../utils/decode';
 import {PixabayGetImagesResponse} from './types';
 
+// some kind of protection
 const key = decode(
-  'MzIyMjMyNjI' + 'tNjZmYWM0MTYw' + 'ZmQzMjAyZmMx' + 'YzJmMzRhZQ==', // protection from very stupid parsers and users
+  'MzIyMjMyNjI',
+  'tNjZmYWM0MTYw',
+  'ZmQzMjAyZmMx',
+  'YzJmMzRhZQ==',
 );
 
 export const getImages = async (query: string, page: number) => {
