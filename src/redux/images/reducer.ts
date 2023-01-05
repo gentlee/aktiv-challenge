@@ -3,7 +3,7 @@ import {PixabayImage} from '../../api/pixabay/types';
 import {loadImages} from './actions';
 
 type ImagesState = {
-  _ids: Set<number>; // mutable
+  _mutableIds: Set<number>;
   userInput: string;
   currentPage: number;
   loading: boolean;
@@ -14,7 +14,7 @@ type ImagesState = {
 };
 
 const initialState: ImagesState = {
-  _ids: new Set(),
+  _mutableIds: new Set(),
   userInput: '',
   currentPage: 0,
   loading: false,
@@ -33,7 +33,7 @@ export const imagesReducer = reducerWithInitialState(initialState)
       loading: true,
     };
     if (page === 1) {
-      newState._ids.clear();
+      newState._mutableIds.clear();
       newState.data = [];
       newState.error = undefined;
       newState.endReached = false;
@@ -57,7 +57,7 @@ export const imagesReducer = reducerWithInitialState(initialState)
     };
 
     // remove duplicates, which are possible with offset-based pagination
-    const ids = state._ids;
+    const ids = state._mutableIds;
     const hasNewData = result.hits.some(x => !ids.has(x.id));
     if (hasNewData) {
       const data = [...state.data];
