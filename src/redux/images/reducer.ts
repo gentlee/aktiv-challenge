@@ -3,7 +3,7 @@ import {PixabayImage} from '../../api/pixabay/types';
 import {loadImages} from './actions';
 
 type ImagesState = {
-  _mutableIds: Set<number>;
+  _mutableIds: Set<number>; // used for removing duplicated items
   userInput: string;
   query: string;
   currentPage: number;
