@@ -1,7 +1,6 @@
 import actionCreatorFactory from 'typescript-fsa';
 import {getImages} from '../../api/pixabay/endpoints';
 import {PixabayGetImagesResponse} from '../../api/pixabay/types';
-import {getQuery} from '../../utils/images';
 import {getState, dispatch} from '../store';
 
 const actionCreator = actionCreatorFactory('IMAGES');
@@ -9,6 +8,7 @@ const actionCreator = actionCreatorFactory('IMAGES');
 export const loadImages = actionCreator.async<
   {
     userInput: string;
+    query: string;
     page: number;
   },
   PixabayGetImagesResponse,
@@ -18,30 +18,28 @@ export const loadImages = actionCreator.async<
 export const loadNextImagePage = async (userInput?: string) => {
   const {
     userInput: currentUserInput,
+    query: currentQuery,
     error: currentError,
     currentPage,
     loading,
     endReached,
   } = getState();
 
-  const currentQuery = getQuery(currentUserInput);
+  const query =
+    userInput === undefined
+      ? currentQuery
+      : userInput.trim().toLowerCase().replace(/\s+/g, '+');
 
-  let query: string;
   if (userInput === undefined) {
     userInput = currentUserInput;
-    query = currentQuery;
-  } else {
-    query = getQuery(userInput);
-
-    if (query === currentQuery) {
-      console.log('cancel request for similar query', {
-        userInput,
-        currentUserInput,
-        query,
-        currentQuery,
-      });
-      return;
-    }
+  } else if (query === currentQuery) {
+    console.log('cancel request for similar query', {
+      userInput,
+      currentUserInput,
+      query,
+      currentQuery,
+    });
+    return;
   }
 
   const page =
@@ -51,11 +49,13 @@ export const loadNextImagePage = async (userInput?: string) => {
     console.log('cancel request, already loading or end reached', {
       query,
       page,
+      loading,
+      endReached,
     });
     return;
   }
 
-  const actionParams = {userInput, page};
+  const actionParams = {userInput, query, page};
 
   dispatch(loadImages.started(actionParams));
 
@@ -69,8 +69,8 @@ export const loadNextImagePage = async (userInput?: string) => {
 
   const currentState = getState();
   if (
-    getQuery(currentState.userInput) !== query ||
-    currentState.currentPage !== page ||
+    currentState.query !== actionParams.query ||
+    currentState.currentPage !== actionParams.page ||
     !currentState.loading
   ) {
     console.log('cancel response', {

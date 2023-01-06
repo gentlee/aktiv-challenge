@@ -5,6 +5,7 @@ import {loadImages} from './actions';
 type ImagesState = {
   _mutableIds: Set<number>;
   userInput: string;
+  query: string;
   currentPage: number;
   loading: boolean;
   endReached: boolean;
@@ -16,6 +17,7 @@ type ImagesState = {
 const initialState: ImagesState = {
   _mutableIds: new Set(),
   userInput: '',
+  query: '',
   currentPage: 0,
   loading: false,
   endReached: false,
@@ -25,10 +27,11 @@ const initialState: ImagesState = {
 };
 
 export const imagesReducer = reducerWithInitialState(initialState)
-  .case(loadImages.started, (state, {userInput, page}) => {
+  .case(loadImages.started, (state, {userInput, query, page}) => {
     const newState = {
       ...state,
       userInput,
+      query,
       currentPage: page,
       loading: true,
     };
